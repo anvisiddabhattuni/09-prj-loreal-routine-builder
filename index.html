@@ -21,6 +21,22 @@
       <header class="site-header">
         <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo" />
         <h1 class="site-title">Smart Routine &amp; Product Advisor</h1>
+        <button
+          id="dirToggle"
+          type="button"
+          style="
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: transparent;
+            cursor: pointer;
+          "
+        >
+          RTL
+        </button>
       </header>
 
       <!-- Category Filter -->
@@ -37,6 +53,12 @@
           <option value="suncare">Suncare</option>
           <option value="fragrance">Fragrance</option>
         </select>
+        <input
+          id="productSearch"
+          type="search"
+          placeholder="Search products by name or keyword"
+          aria-label="Search products"
+        />
       </div>
 
       <!-- Products Grid -->
@@ -46,9 +68,21 @@
       <div class="selected-products">
         <h2>Selected Products</h2>
         <div id="selectedProductsList"></div>
-        <button id="generateRoutine" class="generate-btn">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Routine
-        </button>
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 12px;
+          "
+        >
+          <button id="clearSelections" class="clear-btn" type="button">
+            Clear All
+          </button>
+          <button id="generateRoutine" class="generate-btn">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Routine
+          </button>
+        </div>
       </div>
 
       <!------- Chat Area ------->
@@ -71,6 +105,33 @@
             <span class="visually-hidden">Send</span>
           </button>
         </form>
+
+        <div
+          style="
+            margin-top: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+          "
+        >
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 14px;
+              color: var(--muted);
+            "
+          >
+            <input
+              id="enableSearch"
+              type="checkbox"
+              checked
+              style="width: 16px; height: 16px"
+            />
+            Use web search for up-to-date info
+          </label>
+        </div>
       </section>
 
       <!------- Footer Links ------->
