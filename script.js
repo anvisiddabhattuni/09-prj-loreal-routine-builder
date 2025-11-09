@@ -50,6 +50,10 @@ const conversationMessages = [
 // If empty, web search is disabled.
 const SEARCH_WORKER_URL = "";
 
+// URL of your Cloudflare Worker proxy that forwards requests to OpenAI server-side.
+// Set this to the worker you deployed that injects the OpenAI API key.
+const OPENAI_PROXY_URL = "https://loreal09.anvimsiddabhattuni.workers.dev";
+
 // checkbox in the UI allowing users to toggle web search on/off
 const enableSearchCheckbox = document.getElementById("enableSearch");
 
@@ -71,7 +75,6 @@ async function performWebSearch(query) {
     }
     // If you have a proxy worker that forwards OpenAI requests server-side, set it here.
     const data = await resp.json();
-    const OPENAI_PROXY_URL = "https://loreal09.anvimsiddabhattuni.workers.dev";
     return data.results || null;
   } catch (err) {
     console.warn("Web search failed:", err);
@@ -345,12 +348,9 @@ chatForm.addEventListener("submit", async (e) => {
 
     // Call OpenAI's Chat Completions endpoint with the (possibly augmented) conversation history
     const apiMessages = prepareMessagesForAPI(conversationMessages);
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const resp = await fetch(OPENAI_PROXY_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "gpt-4o",
         messages: apiMessages,
@@ -577,12 +577,9 @@ if (generateBtn) {
 
     try {
       const apiMessages = prepareMessagesForAPI(conversationMessages);
-      const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      const resp = await fetch(OPENAI_PROXY_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "gpt-4o",
           messages: apiMessages,
