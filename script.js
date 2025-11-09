@@ -4,6 +4,16 @@ const productsContainer = document.getElementById("productsContainer");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
 
+// small helper to escape HTML when injecting user/assistant text into the DOM
+function escapeHtml(unsafe) {
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Fix: the input in index.html has id="userInput" — use that first, then fall back.
 // This captures what the user types into the chat box.
 const chatInput =
@@ -59,7 +69,9 @@ async function performWebSearch(query) {
       console.warn("Search worker returned", resp.status);
       return null;
     }
+    // If you have a proxy worker that forwards OpenAI requests server-side, set it here.
     const data = await resp.json();
+    const OPENAI_PROXY_URL = "https://loreal09.anvimsiddabhattuni.workers.dev";
     return data.results || null;
   } catch (err) {
     console.warn("Web search failed:", err);
@@ -204,16 +216,16 @@ function renderSelectedProductsList() {
 
   // attach remove handlers
   selectedProductsList.querySelectorAll(".remove-selected").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", () => {
       const id = Number(btn.getAttribute("data-id"));
       // remove from map and update UI
       if (selectedProducts.has(id)) {
         selectedProducts.delete(id);
-        renderSelectedProductsList();
-        applySelectedClasses();
-        // persist removal
-        saveSelectedToStorage();
       }
+      renderSelectedProductsList();
+      applySelectedClasses();
+      // persist removal
+      saveSelectedToStorage();
     });
   });
 }
@@ -275,12 +287,15 @@ if (productSearch)
 function appendChatMessage(role, text) {
   const cssClass =
     role === "user" ? "chat-message user" : "chat-message assistant";
+
+  // escape text (uses shared escapeHtml helper) and preserve newlines
+  const safe = escapeHtml(text).replace(/\n/g, "<br>");
   const messageHtml = `
     <div class="${cssClass}">
-      <div class="message-role">${role}</div>
-      <div class="message-text">${text}</div>
+      <div class="message-bubble">${safe}</div>
     </div>
   `;
+
   // Add message and scroll to bottom
   chatWindow.insertAdjacentHTML("beforeend", messageHtml);
   chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -307,7 +322,7 @@ chatForm.addEventListener("submit", async (e) => {
   // Show a temporary "thinking" message from the assistant
   appendChatMessage("assistant", "Thinking...");
   const assistantMessages = chatWindow.querySelectorAll(
-    ".chat-message.assistant .message-text"
+    ".chat-message.assistant .message-bubble"
   );
   const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
   try {
@@ -364,7 +379,10 @@ chatForm.addEventListener("submit", async (e) => {
 
     // Replace the temporary "Thinking..." with the real assistant response
     if (lastAssistantMessage) {
-      lastAssistantMessage.textContent = assistantContent;
+      lastAssistantMessage.innerHTML = escapeHtml(assistantContent).replace(
+        /\n/g,
+        "<br>"
+      );
     } else {
       appendChatMessage("assistant", assistantContent);
     }
@@ -523,7 +541,7 @@ if (generateBtn) {
     // Show assistant thinking placeholder
     appendChatMessage("assistant", "Thinking...");
     const assistantMessages = chatWindow.querySelectorAll(
-      ".chat-message.assistant .message-text"
+      ".chat-message.assistant .message-bubble"
     );
     const lastAssistantMessage =
       assistantMessages[assistantMessages.length - 1];
@@ -588,7 +606,10 @@ if (generateBtn) {
           : "Sorry, I could not get a response from the API.";
 
       if (lastAssistantMessage) {
-        lastAssistantMessage.textContent = assistantContent;
+        lastAssistantMessage.innerHTML = escapeHtml(assistantContent).replace(
+          /\n/g,
+          "<br>"
+        );
       } else {
         appendChatMessage("assistant", assistantContent);
       }
@@ -603,7 +624,10 @@ if (generateBtn) {
         err.message || "Check your key and network."
       }`;
       if (lastAssistantMessage) {
-        lastAssistantMessage.textContent = errorMsg;
+        lastAssistantMessage.innerHTML = escapeHtml(errorMsg).replace(
+          /\n/g,
+          "<br>"
+        );
       } else {
         appendChatMessage("assistant", errorMsg);
       }
